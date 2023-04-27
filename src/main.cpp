@@ -2,9 +2,16 @@
 #include <HTTPClient.h>
 #include <secrets.h>
 #include <ArduinoJson.h>
+#include <Adafruit_DotStar.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_SHT31.h>
 #include <Adafruit_LTR329_LTR303.h>
+
+#define NUMPIXELS 1
+#define DATAPIN 33
+#define CLOCKPIN 21
+
+Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 Adafruit_LTR329 ltr = Adafruit_LTR329();
@@ -12,6 +19,11 @@ Adafruit_LTR329 ltr = Adafruit_LTR329();
 void setup()
 {
   Serial.begin(115200);
+
+  strip.begin();
+  strip.setBrightness(20);
+  strip.setPixelColor(0, 255, 0, 0);
+  strip.show();
 
   delay(4000);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -119,18 +131,19 @@ void setup()
 
 void loop()
 {
+  strip.setPixelColor(0, 255, 0, 0);
+  strip.show();
+
   bool valid;
   uint16_t visible_plus_ir, infrared;
-  float visible_plus_ir_value;
-  float infrared_value;
 
   if (ltr.newDataAvailable())
   {
     valid = ltr.readBothChannels(visible_plus_ir, infrared);
     if (valid)
     {
-      visible_plus_ir_value = visible_plus_ir;
-      infrared_value = infrared;
+      Serial.println(visible_plus_ir);
+      Serial.println(infrared);
     }
   }
 
@@ -139,15 +152,15 @@ void loop()
 
   Serial.println(temperature);
   Serial.println(humidity);
-  Serial.println(visible_plus_ir_value);
 
   if (WiFi.status() == WL_CONNECTED)
   {
-    StaticJsonDocument<48> doc;
+    StaticJsonDocument<64> doc;
 
     doc["temperature"] = temperature;
     doc["humidity"] = humidity;
-    doc["light"] = visible_plus_ir_value;
+    doc["visible_plus_ir"] = visible_plus_ir;
+    doc["infrared"] = infrared;
     String output;
 
     serializeJson(doc, output);
@@ -173,6 +186,12 @@ void loop()
   else
   {
     Serial.println("Error in WiFi connection");
+    strip.setPixelColor(0, 0, 255, 0);
+    strip.show();
   }
+
+  strip.setPixelColor(0, 0, 0, 255);
+  strip.show();
+
   delay(5000);
 }
