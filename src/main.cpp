@@ -131,7 +131,7 @@ void setup()
 
 void loop()
 {
-  strip.setPixelColor(0, 255, 0, 0);
+  strip.setPixelColor(0, 0, 0, 255);
   strip.show();
 
   bool valid;
@@ -155,12 +155,15 @@ void loop()
 
   if (WiFi.status() == WL_CONNECTED)
   {
-    StaticJsonDocument<64> doc;
+    StaticJsonDocument<128> doc;
 
-    doc["temperature"] = temperature;
-    doc["humidity"] = humidity;
-    doc["visible_plus_ir"] = visible_plus_ir;
-    doc["infrared"] = infrared;
+    doc["temperatureReading"]["value"] = temperature;
+    doc["HumidityReading"]["value"] = humidity;
+
+    JsonObject LightReading = doc.createNestedObject("LightReading");
+    LightReading["visible_plus_ir_value"] = visible_plus_ir;
+    LightReading["infrared_value"] = infrared;
+
     String output;
 
     serializeJson(doc, output);
@@ -168,6 +171,7 @@ void loop()
     HTTPClient http;
 
     http.begin(API_URI);
+    http.addHeader("Authorization", "Bearer " + String(API_KEY));
     http.addHeader("Content-Type", "application/json");
     int httpResponseCode = http.POST(output);
     if (httpResponseCode > 0)
@@ -175,11 +179,15 @@ void loop()
       String response = http.getString();
       Serial.println(httpResponseCode);
       Serial.println(response);
+      strip.setPixelColor(0, 255, 0, 0);
+      strip.show();
     }
     else
     {
       Serial.print("Error on sending POST: ");
       Serial.println(httpResponseCode);
+      strip.setPixelColor(0, 0, 255, 0);
+      strip.show();
     }
     http.end();
   }
@@ -189,9 +197,6 @@ void loop()
     strip.setPixelColor(0, 0, 255, 0);
     strip.show();
   }
-
-  strip.setPixelColor(0, 0, 0, 255);
-  strip.show();
 
   delay(5000);
 }
