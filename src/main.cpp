@@ -158,9 +158,9 @@ void loop()
     StaticJsonDocument<128> doc;
 
     doc["temperatureReading"]["value"] = temperature;
-    doc["HumidityReading"]["value"] = humidity;
+    doc["humidityReading"]["value"] = humidity;
 
-    JsonObject LightReading = doc.createNestedObject("LightReading");
+    JsonObject LightReading = doc.createNestedObject("lightReading");
     LightReading["visible_plus_ir_value"] = visible_plus_ir;
     LightReading["infrared_value"] = infrared;
 
@@ -179,8 +179,16 @@ void loop()
       String response = http.getString();
       Serial.println(httpResponseCode);
       Serial.println(response);
-      strip.setPixelColor(0, 255, 0, 0);
-      strip.show();
+      if (httpResponseCode == 201)
+      {
+        strip.setPixelColor(0, 255, 0, 0);
+        strip.show();
+      }
+      else
+      {
+        strip.setPixelColor(0, 0, 255, 0);
+        strip.show();
+      }
     }
     else
     {
