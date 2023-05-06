@@ -42,7 +42,7 @@ void setup()
       delay(1);
   }
 
-  Serial.println("LTER329 test");
+  Serial.println("LTR329 test");
   if (!ltr.begin())
   {
     Serial.println("Couldn't find LTR sensor!");
