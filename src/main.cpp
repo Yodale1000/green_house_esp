@@ -22,7 +22,7 @@ void setup()
 
   strip.begin();
   strip.setBrightness(20);
-  strip.setPixelColor(0, 255, 0, 0);
+  strip.setPixelColor(0, 0, 0, 255);
   strip.show();
 
   delay(4000);
@@ -206,5 +206,5 @@ void loop()
     strip.show();
   }
 
-  delay(5000);
+  delay(60000);
 }
