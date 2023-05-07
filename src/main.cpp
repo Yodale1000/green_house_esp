@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include <HTTPClient.h>
 #include <secrets.h>
 #include <ArduinoJson.h>
@@ -25,14 +26,25 @@ void setup()
   strip.setPixelColor(0, 0, 0, 255);
   strip.show();
 
-  delay(4000);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED)
+  WiFi.mode(WIFI_STA);
+  WiFiManager wm;
+
+  bool res;
+  res = wm.autoConnect();
+
+  if (!res)
   {
-    delay(1000);
-    Serial.println("Connecting to WiFi..");
+    Serial.println("Failed to connect");
+    strip.setPixelColor(0, 0, 255, 0);
+    strip.show();
+    ESP.restart();
   }
-  Serial.println("Connected to the WiFi network");
+  else
+  {
+    Serial.println("Connected");
+    strip.setPixelColor(0, 255, 0, 0);
+    strip.show();
+  }
 
   Serial.println("SHT31 test");
   if (!sht31.begin(0x44))
